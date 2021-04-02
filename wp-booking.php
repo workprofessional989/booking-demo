@@ -10,8 +10,6 @@
 require_once( __DIR__ . '/includes/class-formMaker.php' );
 require_once( __DIR__ . '/admin/class-BookingRequest.php' );
 
-
-
 // Main Plugin Class
 if ( ! class_exists( 'BookingVehicle' ) ) {
     class BookingVehicle {
@@ -218,35 +216,24 @@ if ( ! class_exists( 'BookingVehicle' ) ) {
 }
 
 
-	// Ajax Action get vehicles after select vehicles type
-	add_action('wp_ajax_nopriv_getvehicles', 'getvehicles');
-	add_action('wp_ajax_getvehicles', 'getvehicles');
-	function getvehicles(){
+// Ajax Action get vehicles after select vehicles type
+add_action('wp_ajax_nopriv_getvehicles', 'getvehicles');
+add_action('wp_ajax_getvehicles', 'getvehicles');
+function getvehicles(){
+	
+	$data = $_REQUEST;	
+	$vehicletype = $data['vehicletype'];
+	 $myposts = get_posts(array(
+		'numberposts' => -1,
+		'post_type' => 'vehicles',	  
+	));
+	$options = '';
+	foreach( $myposts as $vehicles){
 		
-		$data = $_REQUEST;	
-		$vehicletype = $data['vehicletype'];
-		 $myposts = get_posts(array(
-			'numberposts' => -1,
-			'post_type' => 'vehicles',	  
-		));
-		$options = '';
-		foreach( $myposts as $vehicles){
-			
-			$options .=  '<option value="'.$vehicles->post_title.'" >'.$vehicles->post_title.'</option>';
-		}
-		echo $options; die();
+		$options .=  '<option value="'.$vehicles->post_title.'" >'.$vehicles->post_title.'</option>';
 	}
-
-
-
-
-
-
-
-
-
-
-
+	echo $options; die();
+}
 
 // Calling Obeject of a class
 $bookingbehicle = new BookingVehicle;

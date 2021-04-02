@@ -95,11 +95,7 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 			"show_in_quick_edit" => true,
 		];
 			register_taxonomy( "vehicles_type", [ "vehicles" ], $args );
-		}
-		
-
-  
-		
+		}		
     }
 	
 	
@@ -168,11 +164,6 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 		return $post_id;
 	 
 	}
-
-	
 	
 }
-
-
-
 $bookingrequest = new BookingRequest;
