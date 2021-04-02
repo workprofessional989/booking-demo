@@ -121,19 +121,21 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 	function book_metabox_callback( $post ) {
 		// Add meta for booking status
 		wp_nonce_field( 'somerandomstr', '_mishanonce' );
-	 
+		$seo_robots = get_post_meta( $post->ID, 'book_metabox', true );
+		
+		
+		
 		echo '<table class="form-table">
 			<tbody>			
 				<tr>
 					<th><label for="book_status">Status</label></th>
 					<td>
-						<select id="seo_robots" name="seo_robots">
-							<option value="">Select...</option>
-							<option value="Pending">Pending</option>
-							<option value="Approved">Approved</option>
-							<option value="Reject">Reject</option>
-							<option value="way">On the way</option>
-							<option value="Complete">Complete</option>
+						<select id="book_metabox" name="book_metabox">							
+							<option value="Pending" ' . selected( 'Pending', $seo_robots, false ) . ' >Pending</option>
+							<option value="Approved" ' . selected( 'Approved', $seo_robots, false ) . ' >Approved</option>
+							<option value="Reject" ' . selected( 'Reject', $seo_robots, false ) . ' >Reject</option>
+							<option value="way" ' . selected( 'way', $seo_robots, false ) . ' >On the way</option>
+							<option value="Complete" ' . selected( 'Complete', $seo_robots, false ) . ' >Complete</option>
 						</select>
 					</td>
 				</tr>
@@ -142,6 +144,35 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 	 
 	}
 	
+	
+	add_action( 'save_post', 'misha_save_meta', 10, 2 );
+ 
+	function misha_save_meta( $post_id, $post ) {	 
+		
+		
+		if( isset( $_POST[ 'book_metabox' ] ) ) {
+			update_post_meta( $post_id, 'book_metabox', sanitize_text_field( $_POST[ 'book_metabox' ] ) );
+			$bookingstatus = $_POST[ 'book_metabox' ];
+			// Build the email
+				$subject = __( 'Booking Updated', 'wp-simple-booking' );           
+				$message = '<h3>Booking Status Changed to - '.$bookingstatus.' </h3>';           
+				$headers = array('Content-Type: text/html; charset=UTF-8');            
+            // Send the email
+            wp_mail( $to, $subject, $message, $headers );
+			
+			
+		} else {
+			delete_post_meta( $post_id, 'book_metabox' );
+		}
+	 
+		return $post_id;
+	 
+	}
+
+	
+	
 }
+
+
 
 $bookingrequest = new BookingRequest;
