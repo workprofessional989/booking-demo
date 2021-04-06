@@ -10,14 +10,20 @@
 require_once( __DIR__ . '/includes/class-formMaker.php' );
 require_once( __DIR__ . '/admin/class-BookingRequest.php' );
 
+
+
 // Main Plugin Class
 if ( ! class_exists( 'BookingVehicle' ) ) {
     class BookingVehicle {
         public function __construct() {
             add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
             add_shortcode( 'bookingbehicle', array( $this, 'form' ) );
-            add_action( 'admin_post_nopriv_wp_booking_request', array( $this, 'form_handler' ) );
-            add_action( 'admin_post_wp_booking_request', array( $this, 'form_handler' ) );
+            add_action( 'admin_post_nopriv_wp_booking_request', array( $this, 'form_handler' ) ); 			
+			add_action('wp_ajax_nopriv_getvehicles', array( $this, 'getvehicles' ));
+			add_action('wp_ajax_getvehicles', array( $this, 'getvehicles' ) );
+			add_action('wp_ajax_nopriv_getvehiclesprice', array( $this, 'getvehiclesprice' ));
+			add_action('wp_ajax_getvehiclesprice', array( $this, 'getvehiclesprice' ) );
+			
         }
         
         public function enqueue_scripts() {
@@ -212,28 +218,54 @@ if ( ! class_exists( 'BookingVehicle' ) ) {
             // Redirect back to page
             wp_redirect( add_query_arg( 'status', '1', get_permalink( $post['redirect_id'] ) ) );
         }
-    }
-}
-
-
-// Ajax Action get vehicles after select vehicles type
-add_action('wp_ajax_nopriv_getvehicles', 'getvehicles');
-add_action('wp_ajax_getvehicles', 'getvehicles');
-function getvehicles(){
-	
-	$data = $_REQUEST;	
-	$vehicletype = $data['vehicletype'];
-	 $myposts = get_posts(array(
-		'numberposts' => -1,
-		'post_type' => 'vehicles',	  
-	));
-	$options = '';
-	foreach( $myposts as $vehicles){
 		
-		$options .=  '<option value="'.$vehicles->post_title.'" >'.$vehicles->post_title.'</option>';
-	}
-	echo $options; die();
+		
+		
+		 
+		function getvehicles(){		
+			$data = $_REQUEST;	
+			$vehicletype = $data['vehicletype'];
+			$myposts = get_posts(array(
+			'numberposts' => -1,
+			'post_type' => 'vehicles',	
+				'tax_query' => array(
+					array(
+						'taxonomy' => 'vehicles_type',
+						'field' => 'slug',
+						'terms' => $vehicletype,
+					),
+				),			
+			));
+			$options = '<option value="" >Select Vehicle</option>';
+			foreach( $myposts as $vehicles){
+
+			$options .=  '<option value="'.$vehicles->ID.'" >'.$vehicles->post_title.'</option>';
+			}
+			echo $options; die();
+			exit;
+
+		}
+		 
+		 function getvehiclesprice(){		
+			$data = $_REQUEST;	
+			$vehicleid = $data['vehicle'];
+			echo $price = get_post_meta( $vehicleid , 'vehicle_price', true );	die();	
+
+		}
+		 
+		 
+		 
+		 
+		 
+		 
+		 
+		 
+		
+    }
+	
+	
 }
+
 
 // Calling Obeject of a class
 $bookingbehicle = new BookingVehicle;
