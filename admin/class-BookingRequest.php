@@ -57,7 +57,7 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 			"hierarchical" => false,
 			"rewrite" => [ "slug" => "vehicles", "with_front" => true ],
 			"query_var" => true,
-			"supports" => [ "title", "editor", "thumbnail" ],
+			"supports" => [ "title", "editor", "thumbnail", "custom-fields" ],
 		];
 
 			register_post_type( "vehicles", $args );
@@ -95,12 +95,16 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 			"show_in_quick_edit" => true,
 		];
 			register_taxonomy( "vehicles_type", [ "vehicles" ], $args );
-		}		
+		}
+		
+
+  
+		
     }
 	
 	
 	add_action( 'admin_menu', 'booking_add_metabox' );
-
+	add_action( 'admin_menu', 'booking_add_price' );
 	function booking_add_metabox() {
 	 
 		add_meta_box(
@@ -141,6 +145,41 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 	}
 	
 	
+	function booking_add_price() {
+	 
+		add_meta_box(
+			'vehicle_price', // metabox ID
+			'Vehicle Price', // title
+			'vehicle_price_callback', // callback function
+			'vehicles' ,
+			'normal', // position (normal, side, advanced)
+			'default' // priority (default, low, high, core)
+		);
+	 
+	}
+	
+	
+	
+	function vehicle_price_callback( $post ) {		
+		// Add meta for price		
+		$price = get_post_meta( $post->ID, 'vehicle_price', true );		
+		
+		echo '<table class="form-table">
+			<tbody>			
+				<tr>
+					<th><label for="book_status">Price</label></th>
+					<td>
+						<input type="text" name="vehicle_price" id="vprice" value='.$price.' >  
+					</td>
+				</tr>
+			</tbody>
+		</table>';
+	 
+	}
+	
+	
+	
+	
 	add_action( 'save_post', 'misha_save_meta', 10, 2 );
  
 	function misha_save_meta( $post_id, $post ) {	 
@@ -160,10 +199,31 @@ if ( ! class_exists( 'BookingRequest' ) ) {
 		} else {
 			delete_post_meta( $post_id, 'book_metabox' );
 		}
+		
+		
+		if( isset( $_POST[ 'vehicle_price' ] ) ) {
+			update_post_meta( $post_id, 'vehicle_price', sanitize_text_field( $_POST[ 'vehicle_price' ] ) );
+			
+		} else {
+			delete_post_meta( $post_id, 'vehicle_price' );
+		}
+		
+			
+			
+			
+			
+		
+		
+		
 	 
 		return $post_id;
 	 
 	}
+
+	
 	
 }
+
+
+
 $bookingrequest = new BookingRequest;
